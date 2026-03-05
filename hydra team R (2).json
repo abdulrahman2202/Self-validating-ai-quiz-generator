@@ -1,0 +1,722 @@
+{
+  "name": "hydra team R",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        -144
+      ],
+      "id": "e88cf012-a25a-43f2-bb81-41971a2ebd84",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        48,
+        96
+      ],
+      "id": "34881625-e8e2-4067-8a54-9d964dc5c1d7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "V3mkgZIO6FGtSmvC",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "https://docs.google.com/document/d/1VGoEw8F5Lk-qdAX7qg0l65-eEHAG1eyNnup_RE7hE_U/edit?tab=t.0",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -144
+      ],
+      "id": "0bfcb1a3-117f-4665-b219-77040a01ea67",
+      "name": "save the rules",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "BLQmgTG1bcEsK0Fb",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      rules: $('Rules Creating').first().json.text,        // keep the rules\n      targetValidCount: 1,      // number of validated MCQs you want\n      validCount: 0,\n      totalGenerated: 0,\n      totalInvalid: 0,\n      totalRegenerations: 0,\n      questionBank: []\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -144
+      ],
+      "id": "772b8c80-3d5e-40cb-b87b-e54b8f128975",
+      "name": "Init counters"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        848,
+        96
+      ],
+      "id": "95aa2afb-43bd-492a-9538-c0e620a72e94",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "V3mkgZIO6FGtSmvC",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Quant Problem Design Rules:\n\n {{ $json.rules }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the Problem Generator Agent for quantitative aptitude MCQs.  Using the Quant Problem Design Rules provided in the user message, produce ONE story-based, multi-step quantitative aptitude problem from EXACTLY ONE domain: - Time–Speed–Distance - Work–Time - Pipes–Cisterns - Profit–Loss - Mixtures–Ratio - Age Problems  CRITICAL REQUIREMENTS: - Provide a realistic, clean, clear problem. - Provide exactly 4 MCQ options (A–D). - DO NOT reveal the correct answer anywhere in the problem or options. - DO NOT include any labels like “Correct Answer”, “Answer”, “Solution”, etc. in the visible problem. - The correct answer and solution steps MUST be placed in a hidden internal block.  OUTPUT MUST FOLLOW THIS EXACT STRUCTURE:  [PROBLEM] <story-based problem statement>  A) option B) option C) option D) option [/PROBLEM]  [INTERNAL] CorrectOptionLabel: <A|B|C|D> CorrectOptionValue: <numeric or short text answer> Domain: <one of 6 domains> SolutionSteps: <full detailed explanation of the answer> [/INTERNAL]  Rules: - The [PROBLEM] block must NOT contain any answer information. - The [INTERNAL] block MUST NOT be shown to students. - Do NOT add extra sections like “Key”, “Explanation”, “Correct”, “Answer”, etc."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        768,
+        -144
+      ],
+      "id": "d4d85ae9-4990-4497-8e92-4ae7438b0f16",
+      "name": "problem generator"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "https://docs.google.com/document/d/1JpQ4GZX5zEUP_bhQiwInh9wvrff3hqNm6Owq2sLSdhs/edit?tab=t.0",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.cleanedProblem + \"\\n\\n\" }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        -16
+      ],
+      "id": "21403577-1b92-4c6a-b81a-471d99ed6a49",
+      "name": "save generated questions",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "BLQmgTG1bcEsK0Fb",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        -96
+      ],
+      "id": "dd93938f-6d88-475b-a7ec-4b7f68bea19a",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "V3mkgZIO6FGtSmvC",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        416
+      ],
+      "id": "4b1592a5-3aa0-4645-9b03-784479e27722",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "V3mkgZIO6FGtSmvC",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Solve the following problem:\n\n\n{{ $('problem simple').item.json.cleanedProblem }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are Solver Agent A.  Your job is to solve the quantitative problem using a **strict algebraic method**: - Define variables - Build equations - Apply formulas correctly - Show step-by-step mathematical reasoning - Calculate the final numeric value - Match the value to one of the options (A, B, C, D) - Provide confidence score (0–100)  Rules: - DO NOT reveal that you know the correct answer from metadata. - DO NOT include any hidden metadata or internal labels. - Only use the problem text given to you. - Your method MUST be different from Solver B (who uses logic/option testing). - Output ONLY in the following format:  Reasoning: <algebraic step-by-step solution>  FinalAnswerValue: <final numeric answer>  ChosenOptionLabel: <A | B | C | D>  Confidence: <0–100>"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1792,
+        -320
+      ],
+      "id": "fee4a7d8-c8ac-4eb3-ac70-ec24c2142b3e",
+      "name": "Algebraic Method"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Solve the following problem:\n\n\n{{ $('problem simple').item.json.cleanedProblem }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are Solver Agent B.  Your job is to solve the same quantitative problem BUT using a **different method** than Solver A.  Allowed methods: - Plugging in answer options (try options A, B, C, D) - Logical elimination - Reverse reasoning - Shortcut reasoning - Ratio/units reasoning  Rules: - DO NOT use algebra like Solver A. - DO NOT reveal that you know the correct answer from metadata. - DO NOT copy Solver A’s approach. - Use a human-style reasoning shortcut. - Output ONLY in the following format:  Reasoning: <logic-based or option-testing reasoning>  FinalAnswerValue: <final numeric answer>  ChosenOptionLabel: <A | B | C | D>"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1792,
+        192
+      ],
+      "id": "9cc940ba-91a6-4ccd-8cf8-eb4772a1eb8d",
+      "name": "Logical / Option Testing Method"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2368,
+        -240
+      ],
+      "id": "1aeb0a1a-f58e-4705-ab9b-86ed851cf013",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        144
+      ],
+      "id": "ff2790fe-b41d-4ab8-9a7e-bbb2acc368dd",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "V3mkgZIO6FGtSmvC",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "function safe(v, fallback = \"\") {\n  return v === undefined || v === null || v === \"\" ? fallback : String(v);\n}\n\n// 1) Try to get problem from cleanedProblem\nlet problem = safe($json.cleanedProblem, \"\");\n\n// 2) If still empty, try to recover from any raw text with [PROBLEM]...[/PROBLEM]\nif (!problem || problem === \"[Problem text missing]\") {\n  const rawSource =\n    $json.problemRaw ||      // if you stored generator output here\n    $json.generatorText ||   // or some custom field\n    $json.text ||            // or leftover text from an earlier node\n    \"\";\n\n  const match = rawSource.match(/\\[PROBLEM\\]([\\s\\S]*?)\\[\\/PROBLEM\\]/);\n  if (match) {\n    problem = match[1]\n      .trim()\n      .replace(/\\\\n/g, \"\\n\");   // turn \"\\n\" into real line breaks\n  }\n}\n\n// Final fallback\nproblem = problem || \"[Problem text missing]\";\n\n// --- Official solution from validation or fallback fields ---\nconst v = $json.validation || {};\nconst correctLabel = safe(v.officialAnswerLabel || $json.correctLabel, \"[missing]\");\nconst correctValue = safe(v.officialAnswerValue || $json.correctValue, \"[missing]\");\nconst solutionSteps = safe($json.solutionSteps, \"[missing]\");\n\n// --- Solvers ---\nconst solver1 = safe($json.solver1Raw || $json.solver1Output, \"[Solver 1 output missing]\");\nconst solver2 = safe($json.solver2Raw || $json.solver2Output, \"[Solver 2 output missing]\");\n\n// --- Validation status ---\nconst validFlag = v.isValid ? \"VALID ✓\" : \"INVALID ✗\";\nconst reason = safe(v.notes || v.reason, \"[no reason provided]\");\n\nconst finalText = \n`===========================================\n          QUANT PROBLEM REPORT\n===========================================\n\n🟦 PROBLEM\n${problem}\n\n🟩 OFFICIAL SOLUTION\nCorrect Option: ${correctLabel}\nCorrect Value : ${correctValue}\n\nSteps:\n${solutionSteps}\n\n🟧 SOLVER 1 — ALGEBRAIC METHOD\n${solver1}\n\n🟨 SOLVER 2 — LOGICAL / OPTION TESTING\n${solver2}\n\n🟥 VALIDATION RESULT\nStatus : ${validFlag}\nReason : ${reason}\n\n===========================================\n`;\n\nreturn {\n  ...$json,\n  docText: finalText,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3616,
+        -224
+      ],
+      "id": "33e5a1c6-875e-49ec-a67d-a8a92574030a",
+      "name": "Build Doc Analysis"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1. Get raw text from Validation LLM\nlet raw = $json.text || $json.response || \"\";\n\n// 2. Clean markdown code fences if present\nraw = raw.trim();\n\n// Remove ```json and ``` wrappers if they exist\nif (raw.startsWith(\"```\")) {\n  // remove starting ``` or ```json\n  raw = raw.replace(/^```json\\s*|^```\\s*/i, \"\");\n  // remove trailing ```\n  raw = raw.replace(/```$/i, \"\").trim();\n}\n\n// 3. Try to parse JSON\nlet v;\ntry {\n  v = JSON.parse(raw);\n} catch (e) {\n  v = {\n    isValid: false,\n    solver1MatchesOfficial: false,\n    solver2MatchesOfficial: false,\n    solver1MatchesSolver2: false,\n    officialAnswerLabel: \"\",\n    officialAnswerValue: \"\",\n    notes: \"Could not parse validation JSON: \" + e.message + \" | raw: \" + raw,\n  };\n}\n\n// 4. Attach parsed validation object\nreturn {\n  ...$json,\n  validation: v,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        -96
+      ],
+      "id": "6eb215f4-d591-41f9-ad78-34121eceb405",
+      "name": "Parse Validation LLM"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3392,
+        -224
+      ],
+      "id": "6d938da4-09c2-4bf1-99e5-d9037a35cd8e",
+      "name": "Merge Validation"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1. Get raw LLM output from previous node\n// In your case the text is in $json.text\nlet raw = $json.text || \"\";\n\n// 2. Extract [PROBLEM] block (ignore INTERNAL)\nconst problemMatch = raw.match(/\\[PROBLEM\\]([\\s\\S]*?)\\[\\/PROBLEM\\]/);\nlet problem = problemMatch ? problemMatch[1] : raw;\n\n// 3. Clean up whitespace\nproblem = problem.trim();\n\n// 4. Convert *literal* \"\\n\" sequences to real newlines IF they exist\nif (problem.includes(\"\\\\n\")) {\n  problem = problem.replace(/\\\\n/g, \"\\n\");\n}\n\n// 5. Normalize triple+ newlines to double (optional, just for looks)\nproblem = problem.replace(/\\n{3,}/g, \"\\n\\n\");\n\n// 6. Return cleaned problem text\nreturn {\n  cleanedProblem: problem,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        -16
+      ],
+      "id": "68b525f4-8b12-47bc-992f-2635b7e192c3",
+      "name": "problem simple"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $json.text || \"\";  // solver 1 output text\n\nfunction getField(label) {\n  const regex = new RegExp(label + \":\\\\s*([\\\\s\\\\S]*?)(?:\\\\n\\\\w+:|$)\");\n  const m = raw.match(regex);\n  return m ? m[1].trim() : \"\";\n}\n\nconst solver1Value = getField(\"FinalAnswerValue\");\nconst solver1Label = getField(\"ChosenOptionLabel\");\nconst confidenceStr = getField(\"Confidence\");\nconst solver1Confidence = parseInt(confidenceStr || \"0\", 10);\n\nreturn {\n  ...$json,\n  solver1Raw: raw,\n  solver1Value,\n  solver1Label,\n  solver1Confidence,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        -224
+      ],
+      "id": "1793c828-54e8-495c-9c45-8cdac450cbdb",
+      "name": "solver1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $json.text || \"\";\n\nfunction getField(label) {\n  const regex = new RegExp(label + \":\\\\s*([\\\\s\\\\S]*?)(?:\\\\n\\\\w+:|$)\");\n  const m = raw.match(regex);\n  return m ? m[1].trim() : \"\";\n}\n\nconst solver2Value = getField(\"FinalAnswerValue\");\nconst solver2Label = getField(\"ChosenOptionLabel\");\n\nreturn {\n  ...$json,\n  solver2Raw: raw,\n  solver2Value,\n  solver2Label,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        192
+      ],
+      "id": "ad63f416-d9b8-464c-b90a-79203490d7e5",
+      "name": "solver2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "https://docs.google.com/document/d/1aDuCPD_npONevm7wUabNp6E2su3_GP-TxOdi_y1Wirw/edit?tab=t.0",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.docText }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        -224
+      ],
+      "id": "d74ac4bc-e86e-4279-a4d3-68aa0adbf493",
+      "name": "Report Analysis",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "BLQmgTG1bcEsK0Fb",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "function toNumber(str) {\n  if (!str) return NaN;\n  const cleaned = String(str).replace(/[^\\d./-]/g, \"\");\n  if (cleaned.includes(\"/\")) {\n    const [a, b] = cleaned.split(\"/\");\n    const nA = parseFloat(a);\n    const nB = parseFloat(b);\n    if (!isNaN(nA) && !isNaN(nB) && nB !== 0) {\n      return nA / nB;\n    }\n  }\n  return parseFloat(cleaned);\n}\n\nconst correctLabel = ($json.correctLabel || \"\").trim();      // from INTERNAL\nconst correctValNum = toNumber($json.correctValue);          // \"240 km\" -> 240\n\nconst s1Label = ($json.solver1Label || \"\").trim();\nconst s1ValNum = toNumber($json.solver1Value);\n\nconst s2Label = ($json.solver2Label || \"\").trim();\nconst s2ValNum = toNumber($json.solver2Value);\n\nconst EPS = 1e-6;\n\nconst solver1MatchesOfficial =\n  s1Label === correctLabel &&\n  (isNaN(correctValNum) || Math.abs(s1ValNum - correctValNum) < EPS);\n\nconst solver2MatchesOfficial =\n  s2Label === correctLabel &&\n  (isNaN(correctValNum) || Math.abs(s2ValNum - correctValNum) < EPS);\n\nconst solver1MatchesSolver2 =\n  s1Label === s2Label &&\n  (isNaN(s1ValNum) || Math.abs(s1ValNum - s2ValNum) < EPS);\n\nconst isValid = solver1MatchesOfficial && solver2MatchesOfficial && solver1MatchesSolver2;\n\nlet reason;\nif (isValid) {\n  reason = \"Both solvers agree with the official solution.\";\n} else {\n  reason = \"Mismatch: \";\n  if (!solver1MatchesOfficial) reason += \"Solver 1 disagrees with official. \";\n  if (!solver2MatchesOfficial) reason += \"Solver 2 disagrees with official. \";\n  if (!solver1MatchesSolver2) reason += \"Solver 1 and Solver 2 disagree. \";\n}\n\nreturn {\n  ...$json,\n  validation: {\n    isValid,\n    solver1MatchesOfficial,\n    solver2MatchesOfficial,\n    solver1MatchesSolver2,\n    normalizedCorrectLabel: correctLabel,\n    normalizedCorrectValue: $json.correctValue,\n    reason,\n  },\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        -96
+      ],
+      "id": "c61f263c-7a36-45cf-9735-628c78881d6a",
+      "name": "Both Answer Checking"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are the Research Agent. Study the quant domains (Time–Speed–Distance, Work–Time, Pipes–Cisterns, Profit–Loss, Mixtures–Ratio, Age Problems) and common hallucination patterns. Output a structured “Quant Problem Design Rules” document that includes: templates, formulas, constraints (no negative time, etc.), steps for safe MCQ creation, hallucination-prevention guidelines, and structure of hidden reasoning steps.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -32,
+        -144
+      ],
+      "id": "01f43c72-625a-40db-9a39-538949a0ac76",
+      "name": "Rules Creating"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $json.text || \"\";      // full generator output with [PROBLEM] and [INTERNAL]\n\n// Extract INTERNAL block\nconst internalMatch = raw.match(/\\[INTERNAL\\]([\\s\\S]*?)\\[\\/INTERNAL\\]/);\nconst internal = internalMatch ? internalMatch[1].trim() : \"\";\n\n// Helper to grab a single-line field\nfunction getField(label) {\n  const regex = new RegExp(label + \":\\\\s*(.*)\");\n  const m = internal.match(regex);\n  return m ? m[1].trim() : \"\";\n}\n\n// Extract fields\nconst correctLabel = getField(\"CorrectOptionLabel\");\nconst correctValue = getField(\"CorrectOptionValue\");\nconst domain = getField(\"Domain\");\n\n// SolutionSteps: everything after 'SolutionSteps:'\nconst solMatch = internal.match(/SolutionSteps:\\s*([\\s\\S]*)$/);\nconst solutionSteps = solMatch ? solMatch[1].trim() : \"\";\n\nreturn {\n  ...$json,\n  correctLabel,\n  correctValue,\n  domain,\n  solutionSteps,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -144
+      ],
+      "id": "aa6223e5-4422-462e-a98f-72fb05f9f7b7",
+      "name": "Store internal ans"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Problem:\n{{ $json.text }}\n\nOfficial Solution Metadata:\nCorrectOptionLabel: {{ $json.correctLabel }}\nCorrectOptionValue: {{ $json.correctValue }}\nSolutionSteps:\n{{ $json.solutionSteps }}\n\nSolver 1 Output:\n{{ $json.solver1Raw }}\n\nSolver 2 Output:\n{{ $json.solver2Raw }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the Validator Agent for quantitative word problems.  You will be given: - The problem statement and options. - The official solution metadata (correct option label, correct numeric/text answer, and step-by-step solution). - Solver 1's output (reasoning, final answer value, chosen option, confidence). - Solver 2's output (reasoning, final answer value, chosen option).  Your job:  1. Check if Solver 1's chosen option and numeric answer match the official solution. 2. Check if Solver 2's chosen option and numeric answer match the official solution. 3. Check if Solver 1 and Solver 2 agree with each other. 4. Check if the official solution steps are logically consistent with the final answer (no impossible values, no negative time, etc.). 5. Decide whether this question is valid and safe to keep.  Return ONLY a single JSON object with this structure (no extra text before or after):  {   \"isValid\": true or false,   \"solver1MatchesOfficial\": true or false,   \"solver2MatchesOfficial\": true or false,   \"solver1MatchesSolver2\": true or false,   \"officialAnswerLabel\": \"<A|B|C|D>\",   \"officialAnswerValue\": \"<string>\",   \"notes\": \"short explanation of why it is valid or not\" }"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        2816,
+        -96
+      ],
+      "id": "38a35aed-4bf6-46f9-bbf0-ffcc9a3648b9",
+      "name": "Validation llm"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Rules Creating",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rules Creating",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save the rules": {
+      "main": [
+        [
+          {
+            "node": "Init counters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init counters": {
+      "main": [
+        [
+          {
+            "node": "problem generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "problem generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "problem generator": {
+      "main": [
+        [
+          {
+            "node": "Store internal ans",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save generated questions": {
+      "main": [
+        [
+          {
+            "node": "Logical / Option Testing Method",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Algebraic Method",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Algebraic Method",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Logical / Option Testing Method",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logical / Option Testing Method": {
+      "main": [
+        [
+          {
+            "node": "solver2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Algebraic Method": {
+      "main": [
+        [
+          {
+            "node": "solver1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Both Answer Checking",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Validation",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Validation llm",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Doc Analysis": {
+      "main": [
+        [
+          {
+            "node": "Report Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Validation LLM": {
+      "main": [
+        [
+          {
+            "node": "Merge Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Validation": {
+      "main": [
+        [
+          {
+            "node": "Build Doc Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "problem simple": {
+      "main": [
+        [
+          {
+            "node": "save generated questions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "solver1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "solver2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Both Answer Checking": {
+      "main": [
+        [
+          {
+            "node": "Validation llm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rules Creating": {
+      "main": [
+        [
+          {
+            "node": "save the rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store internal ans": {
+      "main": [
+        [
+          {
+            "node": "problem simple",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Validation llm": {
+      "main": [
+        [
+          {
+            "node": "Parse Validation LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f8290187-5506-438b-af28-fab6a1840215",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5f68ba80974b800e22293fd0edb00c23230988c7ecb9141d3c2b78921efbeee1"
+  },
+  "id": "r9YCJ7DNqOYgXkst",
+  "tags": []
+}
