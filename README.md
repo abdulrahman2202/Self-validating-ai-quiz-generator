@@ -147,7 +147,7 @@ If you find this project useful:
 
 ---
 
-## Image
+##Output Image
 
 <img width="1526" height="538" alt="Screenshot 2026-03-05 200844" src="https://github.com/user-attachments/assets/33e1e7aa-3234-417f-b923-091cfa99b368" />
 
