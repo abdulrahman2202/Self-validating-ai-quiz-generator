@@ -1,4 +1,4 @@
-# Agentic AI Quant Problem Generator
+# Agentic AI Quant Problem Generator Using N8N
 
 An **Agentic AI system** that autonomously generates quantitative word problems, validates them using dual solver agents, and produces verified quiz-ready questions.
 The system uses **workflow orchestration with N8N** and **Gemini AI models** to ensure mathematical correctness and reduce hallucinations.
